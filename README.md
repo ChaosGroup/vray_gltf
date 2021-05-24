@@ -1,5 +1,7 @@
 # V-Ray glTF viewer
 
+![Sample render](/samples/basic/basic.png)
+
 ## Overview
 
 The V-Ray glTF viewer is a set of Python scripts for the V-Ray App SDK that allow the parsing and rendering of glTF (.gltf and .glb) files.
