@@ -54,6 +54,12 @@ The V-Ray glTF scripts are command-line only; there is no GUI and all options mu
 
 Use the --help option to list all possible options and their values.
 
+An example command to render the sample .glb file could look like this (assuming that the vray_gltf project is extracted to **d:\temp\vray_gltf**):
+
+```
+python main.py d:\temp\vray_gltf\samples\basic\basic.glb --thick_glass --default_lights --default_cam_moffset "(0, 0, -0.5)" --output_file d:\temp\vray_gltf.jpg
+```
+
 ## Supported features
 
 The glTF parser supports glTF 2.0 with the following extensions:
