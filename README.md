@@ -52,6 +52,8 @@ The Python binding of the V-Ray AppSDK is also included with V-Ray 5 for 3ds Max
 
 The V-Ray glTF scripts are command-line only; there is no GUI and all options must be passed on the command line.
 
+Use the --help option to list all possible options and their values.
+
 ## Supported features
 
 The glTF parser supports glTF 2.0 with the following extensions:
