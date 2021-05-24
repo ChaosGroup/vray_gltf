@@ -62,3 +62,5 @@ The glTF parser supports glTF 2.0 with the following extensions:
 * KHR_lights_punctual is currently WIP
 
 Simple transform animations are supported to some extent. Vertex deformations, either through morphing or skinning are currently not supported.
+
+Most of the sample models provided by Khronos generally render fine, as well as many models from the Windows 3D viewer library.
