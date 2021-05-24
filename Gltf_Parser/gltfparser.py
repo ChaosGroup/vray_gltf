@@ -1071,13 +1071,15 @@ class GltfParser:
 						inner_c_a = gltf_light.spot_attr.get('innerConeAngle')
 						outer_c_a = gltf_light.spot_attr.get('outerConeAngle')
 
+						# Note that in V-Ray, the entire angle is measured (it's a diameter),
+						# not just the half angle from the center of the hotspot, so we need to multiply by 2.0
 						if outer_c_a != None:
-							v_light.coneAngle = outer_c_a
+							v_light.coneAngle = outer_c_a*2.0
 						else:
 							v_light.coneAngle = math.pi/4.0
 						if inner_c_a != None:
 							#negative to start inside the spot cone
-							v_light.penumbraAngle = inner_c_a - outer_c_a
+							v_light.penumbraAngle = (inner_c_a - outer_c_a)*2.0
 						else:
 							v_light.penumbraAngle = 0
 
