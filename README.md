@@ -69,7 +69,7 @@ The glTF parser supports glTF 2.0 with the following extensions:
 * KHR_materials_transmission
 * KHR_materials_clearcoat
 * KHR_materials_sheen
-* KHR_lights_punctual is currently WIP
+* KHR_lights_punctual is mostly working, but light range is not supported
 
 Simple transform animations are supported to some extent. Vertex deformations, either through morphing or skinning are currently not supported.
 
