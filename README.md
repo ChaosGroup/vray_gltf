@@ -49,3 +49,16 @@ The Python binding of the V-Ray AppSDK is also included with V-Ray 5 for 3ds Max
 ## Usage
 
 The V-Ray glTF scripts are command-line only; there is no GUI and all options must be passed on the command line.
+
+## Supported features
+
+The glTF parser supports glTF 2.0 with the following extensions:
+
+* KHR_texture_transform
+* KHR_materials_pbrSpecularGlossiness
+* KHR_materials_transmission
+* KHR_materials_clearcoat
+* KHR_materials_sheen
+* KHR_lights_punctual is currently WIP
+
+Simple transform animations are supported to some extent. Vertex deformations, either through morphing or skinning are currently not supported.
