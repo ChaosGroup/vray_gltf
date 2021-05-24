@@ -1049,7 +1049,7 @@ class GltfParser:
 
 		if gltf_node.extensions != None:
 
-			#lights
+			# Lights - still WIP
 			light_ext = gltf_node.extensions.get('KHR_lights_punctual')
 			if light_ext != None:
 
