@@ -537,15 +537,18 @@ class GltfParser:
 				dif.texture = vray.AColor(c_mult[0], c_mult[1], c_mult[2], c_mult[3])
 				brdf.diffuse = dif
 		
-		roughness = gltf_pbrmr_mat.roughnessFactor
 		metallic = gltf_pbrmr_mat.metallicFactor
+		if metallic==None:
+			metallic=1.0 # The default metallic factor is 1.0 according to the glTF specification
 
-		if roughness != None:
-			brdf.reflect_glossiness = roughness
-			brdf.refract_glossiness = roughness
-			
-		if metallic != None:
-			brdf.metalness = metallic
+		brdf.metalness = metallic
+
+		roughness = gltf_pbrmr_mat.roughnessFactor
+		if roughness==None:
+			roughness=1.0 # The default roughness factor is 1.0 according to the glTF specification
+
+		brdf.reflect_glossiness = roughness
+		brdf.refract_glossiness = roughness
 
 		metallicRoughness_tex = gltf_pbrmr_mat.metallicRoughnessTexture
 		if metallicRoughness_tex != None:
