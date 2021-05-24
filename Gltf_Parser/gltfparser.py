@@ -840,6 +840,7 @@ class GltfParser:
 				refract_tex.input=alpha_split.alpha
 				refract_tex.invert=True
 				brdf.refract = refract_tex
+				brdf.refract_affect_shadows = True
 			elif self.thin_glass:
 				# Use the opacity as inverse refraction color and thin-walled mode
 				refract_tex = renderer.classes.TexFloatToColor()
@@ -847,6 +848,7 @@ class GltfParser:
 				refract_tex.invert=True
 				brdf.refract = refract_tex
 				brdf.refract_thin_walled = True
+				brdf.refract_affect_shadows = True
 			else:
 				# Use opacity as is
 				brdf.opacity = alpha_split.alpha
