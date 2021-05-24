@@ -1063,10 +1063,10 @@ class GltfParser:
 				if light_idx != None:
 					gltf_light = self.lights[light_idx]
 
-					#create the vray light node
+					# Create the vray light node
 					if gltf_light.mtype == 'spot':
 						v_light = renderer.classes.LightSpot()
-						v_light.units = 1
+						v_light.units = 2 # Candela (cd=lm/sr) as units
 
 						inner_c_a = gltf_light.spot_attr.get('innerConeAngle')
 						outer_c_a = gltf_light.spot_attr.get('outerConeAngle')
@@ -1083,12 +1083,11 @@ class GltfParser:
 
 					elif gltf_light.mtype == 'point':
 						v_light = renderer.classes.LightOmni()
-						v_light.units = 1
+						v_light.units = 2 # Candela (cd=lm/sr) as units
 
-					elif gltf_light.mtype == "directional":
-
-						v_light = renderer.classes.LightDirect()
-						v_light.units = 2
+					elif gltf_light.mtype == 'directional':
+						v_light = renderer.classes.MayaLightDirect()
+						v_light.units = 2 # Lux (lx=lm/m/m as units)
 
 					#Color
 					if gltf_light.color != None:

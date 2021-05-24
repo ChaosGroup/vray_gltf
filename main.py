@@ -134,6 +134,12 @@ if __name__ == "__main__":
 		renderer.renderMode = args.render_mode
 		renderer.size = args.size
 		renderer.setInteractiveNoiseThreshold(args.noise_treshold)
+
+		# Set the units settings
+		photometricSettings=renderer.classes.SettingsUnitsInfo.getInstanceOrCreate()
+		photometricSettings.photometric_scale=1.0
+		photometricSettings.scene_upDir=vray.Vector(0, 1, 0) # glTF is Y-up
+		photometricSettings.meters_scale=1.0 # Assume 1 unit is 1 meter
 		
 		#parsing scene contents and creating vray plugins
 		Parser.parseScene(args.scene_file,renderer, dumpToJson = args.json_dump)
