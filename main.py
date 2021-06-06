@@ -17,7 +17,7 @@ argParser = argparse.ArgumentParser("Vray GLTF", allow_abbrev=False)
 
 argParser.add_argument('scene_file',type=str, help="Scene file")
 
-argParser.add_argument('--render_mode',dest='render_mode', type=str, help="Rendering Mode, by default interactive")
+argParser.add_argument('--render_mode',dest='render_mode', type=str, help="Rendering Mode, by default interactive; can be production or interactive")
 argParser.set_defaults(render_mode='interactive')
 
 argParser.add_argument('--noise_treshold',dest='noise_treshold', type=float, help="Noise Treshold")
@@ -84,6 +84,9 @@ argParser.set_defaults(thick_glass=False)
 argParser.add_argument('--thin_glass',dest='thin_glass', action='store_true', help="For alpha mode set to BLEND, use thin glass, otherwise use opacity")
 argParser.set_defaults(thin_glass=False)
 
+argParser.add_argument('--trace_depth',dest='trace_depth', type=int, help="Set the maximum reflection/refraction trace depth")
+argParser.set_defaults(trace_depth=8)
+
 args = argParser.parse_args()
 
 #this way it can be written in any way, as a tuple/list/array or just plain white space separation
@@ -134,6 +137,11 @@ if __name__ == "__main__":
 		renderer.renderMode = args.render_mode
 		renderer.size = args.size
 		renderer.setInteractiveNoiseThreshold(args.noise_treshold)
+		
+		# For interactive or GPU rendering, set limit for the trace depth
+		settingsRTEngine=renderer.classes.SettingsRTEngine.getInstances()
+		if len(settingsRTEngine)>0:
+			settingsRTEngine[0].trace_depth=args.trace_depth
 
 		# Set the units settings
 		photometricSettings=renderer.classes.SettingsUnitsInfo.getInstanceOrCreate()

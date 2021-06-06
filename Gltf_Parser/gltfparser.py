@@ -119,6 +119,7 @@ class GltfParser:
 		self.use_ground_plane = False
 		self.thick_glass = False
 		self.thin_glass = False
+		self.trace_depth = 8
 
 	def set_options(self, args = None):
 		self.animation_fps = args.animation_fps
@@ -135,6 +136,7 @@ class GltfParser:
 		self.use_ground_plane = args.ground_plane
 		self.thick_glass = args.thick_glass
 		self.thin_glass = args.thin_glass
+		self.trace_depth = args.trace_depth
 
 		if args.default_cam_look_at != None:
 			self.average_scene_pos_or = vray.Vector(args.default_cam_look_at[0],args.default_cam_look_at[1],args.default_cam_look_at[2])
@@ -767,6 +769,9 @@ class GltfParser:
 		brdf.fresnel = True
 		brdf.option_glossy_fresnel = True # Glossy Fresnel produces a better result for rough reflective surfaces
 		brdf.refract_ior = 1.5 # glTF uses IOR 1.5 by default
+		brdf.reflect_depth = self.trace_depth
+		brdf.refract_depth = self.trace_depth
+		
 		def_uvw_gen = renderer.classes.UVWGenChannel()
 		def_uvw_gen.uvw_channel = -1
 		def_uvw_gen.uvw_transform = TEXTURE_FLIP_TRANSFORM
