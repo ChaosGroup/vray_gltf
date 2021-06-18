@@ -120,6 +120,7 @@ class GltfParser:
 		self.thick_glass = False
 		self.thin_glass = False
 		self.trace_depth = 8
+		self.environment_scene=None
 
 	def set_options(self, args = None):
 		self.animation_fps = args.animation_fps
@@ -137,6 +138,7 @@ class GltfParser:
 		self.thick_glass = args.thick_glass
 		self.thin_glass = args.thin_glass
 		self.trace_depth = args.trace_depth
+		self.environment_scene=args.environment_scene
 
 		if args.default_cam_look_at != None:
 			self.average_scene_pos_or = vray.Vector(args.default_cam_look_at[0],args.default_cam_look_at[1],args.default_cam_look_at[2])
@@ -1205,7 +1207,7 @@ class GltfParser:
 	def _update_scene(self,renderer):
 		for node in self.nodes:
 			#reset node transforms for full recalculations as in APPSDK node() does not have children
-			node.transform = vray.Transform(vray.Matrix.identity,vray.Vector(0,0,0))
+			node.transform = vray.Transform(vray.Matrix.identity, vray.Vector(0, 0, 0))
 			self._update_node_geom(renderer,node)
 		for scene in self.scenes:
 			for root_node in scene.nodes:
@@ -1248,116 +1250,121 @@ class GltfParser:
 				lights = light_ext.get('lights')
 				if lights != None:
 					for light in lights:
-						self.lights.append(parserUtils.Light.fromDict(light))		
+						self.lights.append(parserUtils.Light.fromDict(light))
 	
-	def parseScene(self,file_name = '', vrenderer = None,dumpToJson = False,jsonFileName = 'jsonDump.txt'):
+	def parseScene(self,file_name = '', vrenderer = None, dumpToJson = False, jsonFileName = 'jsonDump.txt'):
+		#get files location for external .bin files
+		self.file_loc = parserUtils._get_str_path(file_name)
 
-			#get files location for external .bin files
-			self.file_loc = parserUtils._get_str_path(file_name)
+		self.currentOffset = 0
 
-			self.currentOffset = 0
-
-			if file_name.endswith('.gltf'):
+		if file_name.endswith('.gltf'):
 					
-				self.fileType = 'gltf'
+			self.fileType = 'gltf'
 
-				with open(file_name) as gltf_scene:
+			with open(file_name) as gltf_scene:
 
-					fileData = json.load(gltf_scene)
-					self._parse_json_data(fileData)
-					
-			elif file_name.endswith('glb'):
-						
-				self.fileType = 'glb'
-				#GLB Header [0] ASCII string 'gltf',[1] version,[2] - length in bytes
-				GLB_header = np.fromfile(file_name, dtype='<u4',count = 3, offset = 0)
-				fileLength = GLB_header[2]
-				self.currentOffset = 12 
-
-				# Parsing Chunk 0 - should be ASCII representation of the JSON data
-				JSON_info = np.fromfile(file_name, dtype='<u4',count = 2 , offset = self.currentOffset)
-				self.currentOffset += 8
-
-				# Parsing the Json contents from Chunk0 without numpy as it is not so optimal
-				with open(file_name,'rb') as glb_file:
-					glb_file.seek(self.currentOffset)
-					json_contents = glb_file.read(JSON_info[0])
-				
-				fileData = json.loads(json_contents.decode("utf-8"))
-				#CHUNK1 skipping 2 uint32 = chunkLengthInBytes , typeOfChunk 
-				self.currentOffset+=JSON_info[0] + 8
-
-				if dumpToJson == True:
-					print("Dumping gltf to json")
-					with open(jsonFileName, 'w') as outfile:
-						json.dump(fileData,outfile)
-						
+				fileData = json.load(gltf_scene)
 				self._parse_json_data(fileData)
-			
-			self._parseSceneData(file_name)
-			
-			# Setup objects&plugins after json and raw data has been parsed
-			self._init_scene(vrenderer)
+					
+		elif file_name.endswith('glb'):
+			self.fileType = 'glb'
+			#GLB Header [0] ASCII string 'gltf',[1] version,[2] - length in bytes
+			GLB_header = np.fromfile(file_name, dtype='<u4',count = 3, offset = 0)
+			fileLength = GLB_header[2]
+			self.currentOffset = 12 
 
-			# Create an infinite plane
-			if self.use_ground_plane:
-				planeGeom=vrenderer.classes.GeomPlane()
-				planeBRDF=vrenderer.classes.BRDFVRayMtl()
-				planeNode=vrenderer.classes.Node()
-				planeNode.geometry=planeGeom;
-				planeNode.material=planeBRDF;
-				planePos=self.minVertBound
-				planeNode.transform=vray.Transform(vray.Matrix(vray.Vector(1,0,0), vray.Vector(0,0,-1), vray.Vector(0,1,0)), planePos)
+			# Parsing Chunk 0 - should be ASCII representation of the JSON data
+			JSON_info = np.fromfile(file_name, dtype='<u4',count = 2 , offset = self.currentOffset)
+			self.currentOffset += 8
+
+			# Parsing the Json contents from Chunk0 without numpy as it is not so optimal
+			with open(file_name,'rb') as glb_file:
+				glb_file.seek(self.currentOffset)
+				json_contents = glb_file.read(JSON_info[0])
+				
+			fileData = json.loads(json_contents.decode("utf-8"))
+			#CHUNK1 skipping 2 uint32 = chunkLengthInBytes , typeOfChunk 
+			self.currentOffset+=JSON_info[0] + 8
+
+			if dumpToJson == True:
+				print("Dumping gltf to json")
+				with open(jsonFileName, 'w') as outfile:
+					json.dump(fileData,outfile)
+						
+			self._parse_json_data(fileData)
+			
+		self._parseSceneData(file_name)
+			
+		# Setup objects&plugins after json and raw data has been parsed
+		self._init_scene(vrenderer)
+
+		# Create a VRayScene node with the environment scene if one is specified
+		if self.environment_scene!=None:
+			vrayScene=vrenderer.classes.VRayScene()
+			vrayScene.filepath=self.environment_scene
+			vrayScene.flip_axis=1 # Automatically detect up direction based on SettingsUnitsInfo
+			vrayScene.transform=vray.Matrix.identity
+
+		# Create an infinite plane
+		if self.use_ground_plane:
+			planeGeom=vrenderer.classes.GeomPlane()
+			planeBRDF=vrenderer.classes.BRDFVRayMtl()
+			planeNode=vrenderer.classes.Node()
+			planeNode.geometry=planeGeom;
+			planeNode.material=planeBRDF;
+			planePos=self.minVertBound
+			planeNode.transform=vray.Transform(vray.Matrix(vray.Vector(1,0,0), vray.Vector(0,0,-1), vray.Vector(0,1,0)), planePos)
 	
-			cam_trans = vray.Transform(vray.Matrix.identity,vray.Vector())
-			#calc avarage scene pos
-			#self.average_scene_pos = self.average_scene_pos/self.scene_verts
-			self.average_scene_pos=(self.maxVertBound+self.minVertBound)*0.5
-			if self.use_default_cam or len(self.cameras)<1:
-				camLookAt=self.average_scene_pos
-				if self.average_scene_pos_or != None:
-					camLookAt=self.average_scene_pos_or
+		cam_trans = vray.Transform(vray.Matrix.identity,vray.Vector())
+		#calc avarage scene pos
+		#self.average_scene_pos = self.average_scene_pos/self.scene_verts
+		self.average_scene_pos=(self.maxVertBound+self.minVertBound)*0.5
+		if self.use_default_cam or len(self.cameras)<1:
+			camLookAt=self.average_scene_pos
+			if self.average_scene_pos_or != None:
+				camLookAt=self.average_scene_pos_or
 
-				cam_trans = cameraUtils.set_up_default_camera(
-					vrenderer,
-					self.minVertBound,
-					self.maxVertBound,
-					camLookAt,
-					rot_angles = self.default_cam_rot,
-					cam_moffset = self.default_cam_moffset,
-					fov = math.radians(self.default_cam_fov),
-					default_cam_pos = self.default_cam_pos,
-					zoom = self.default_cam_zoom,
-					view = self.default_cam_view
-				)
+			cam_trans = cameraUtils.set_up_default_camera(
+				vrenderer,
+				self.minVertBound,
+				self.maxVertBound,
+				camLookAt,
+				rot_angles = self.default_cam_rot,
+				cam_moffset = self.default_cam_moffset,
+				fov = math.radians(self.default_cam_fov),
+				default_cam_pos = self.default_cam_pos,
+				zoom = self.default_cam_zoom,
+				view = self.default_cam_view
+			)
 			
-			if len(self.lights) < 1:
-				# Default lights
-				print("[parserInfo] Scene has no lights, creating default lights")
+		if len(self.lights) < 1:
+			# Default lights
+			print("[parserInfo] Scene has no lights, creating default lights")
 
-				upVector=vray.Vector(0,1,0)
+			upVector=vray.Vector(0,1,0)
 
-				renderView = vrenderer.classes.RenderView.getInstanceOrCreate()
+			renderView = vrenderer.classes.RenderView.getInstanceOrCreate()
 
-				# Create a dome (environment) light
-				domeLight = vrenderer.classes.LightDome()
-				domeLight.transform = vray.Transform(computeNormalMatrix(upVector), vray.Vector(0, 0, 0))
-				domeLight.invisible = True
-				domeLight.intensity = 0.2
+			# Create a dome (environment) light
+			domeLight = vrenderer.classes.LightDome()
+			domeLight.transform = vray.Transform(computeNormalMatrix(upVector), vray.Vector(0, 0, 0))
+			domeLight.invisible = True
+			domeLight.intensity = 0.2
 
-				# Create a directional light; use SunLight (although MayaLightDirect is also possible)
-				directionalLight = vrenderer.classes.SunLight()
-				directionalLight.color_mode=1 # Override sun color and intensity
+			# Create a directional light; use SunLight (although MayaLightDirect is also possible)
+			directionalLight = vrenderer.classes.SunLight()
+			directionalLight.color_mode=1 # Override sun color and intensity
 
-				isAutoTopView=False
-				diag=self.maxVertBound-self.minVertBound
-				if self.default_cam_pos==None and self.default_cam_view=='auto' and diag.y<diag.x and diag.y<diag.z:
-					lightDir = vray.Vector(0.5, 1, -0.5).normalize()
-				else:
-					lightDir = vray.Vector(0.5, 1, 0.5).normalize()
+			isAutoTopView=False
+			diag=self.maxVertBound-self.minVertBound
+			if self.default_cam_pos==None and self.default_cam_view=='auto' and diag.y<diag.x and diag.y<diag.z:
+				lightDir = vray.Vector(0.5, 1, -0.5).normalize()
+			else:
+				lightDir = vray.Vector(0.5, 1, 0.5).normalize()
 
-				directionalLight.transform = vray.Transform(computeNormalMatrix(lightDir), vray.Vector(0,0,0))
-				directionalLight.size_multiplier=4
+			directionalLight.transform = vray.Transform(computeNormalMatrix(lightDir), vray.Vector(0,0,0))
+			directionalLight.size_multiplier=4
 
 	#update animations
 	def _setup_frame(self,frame,vrenderer):

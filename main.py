@@ -87,6 +87,9 @@ argParser.set_defaults(thin_glass=False)
 argParser.add_argument('--trace_depth',dest='trace_depth', type=int, help="Set the maximum reflection/refraction trace depth")
 argParser.set_defaults(trace_depth=8)
 
+argParser.add_argument('--environment_scene',dest='environment_scene', type=str, help=".vrscene file to load with additional geometry and lights")
+argParser.set_defaults(environment_scene=None)
+
 args = argParser.parse_args()
 
 #this way it can be written in any way, as a tuple/list/array or just plain white space separation
