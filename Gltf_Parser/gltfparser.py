@@ -224,7 +224,7 @@ class GltfParser:
 				data = self._from_bin_w_stride(decoded_data, bufferViewID, np.dtype(compType), count,countModifier, offset, base64str = True)			
 			
 		else:
-			file_path = str(self.file_loc + buffer_uri)
+			file_path = os.path.join(self.file_loc, buffer_uri)
 			if self.bufferViews[bufferViewID].byteStride == None:
 				data = np.fromfile(file_path,dtype = compType, count = count*countModifier, offset = offset)
 				data = data.reshape(count,countModifier)
@@ -343,7 +343,7 @@ class GltfParser:
 				
 			else:
 
-				self.images[image_idx].file_loc = self.file_loc + image_uri
+				self.images[image_idx].file_loc = os.path.join(self.file_loc, image_uri)
 				self.images[image_idx].local = True
 
 	def _calculate_node_raw_transforms(self,gltf_node):
@@ -1254,7 +1254,7 @@ class GltfParser:
 	
 	def parseScene(self,file_name = '', vrenderer = None, dumpToJson = False, jsonFileName = 'jsonDump.txt'):
 		#get files location for external .bin files
-		self.file_loc = parserUtils._get_str_path(file_name)
+		self.file_loc = os.path.dirname(os.path.abspath(file_name))
 
 		self.currentOffset = 0
 
