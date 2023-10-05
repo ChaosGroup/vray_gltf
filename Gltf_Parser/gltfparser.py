@@ -801,6 +801,8 @@ class GltfParser:
 					self._create_KHR_materials_sheen(renderer, prim, gltf_mat.extensions.get('KHR_materials_sheen'), brdf)
 				if gltf_ext=='KHR_materials_emissive_strength':
 					emissive_strength = gltf_mat.extensions.get('KHR_materials_emissive_strength').get('emissiveStrength')
+				if gltf_ext=='KHR_materials_ior':
+					brdf.refract_ior = gltf_mat.extensions.get('KHR_materials_ior').get('ior')
 
 		# Apply vertex color to the diffuse texture
 		applyVertexColor(renderer, brdf, channel_names)
