@@ -65,10 +65,12 @@ python main.py d:\temp\vray_gltf\samples\basic\basic.glb --thick_glass --default
 The glTF parser supports glTF 2.0 with the following extensions:
 
 * KHR_texture_transform
-* KHR_materials_pbrSpecularGlossiness
-* KHR_materials_transmission
 * KHR_materials_clearcoat
+* KHR_materials_emissive_strength
+* KHR_materials_ior
+* KHR_materials_pbrSpecularGlossiness
 * KHR_materials_sheen
+* KHR_materials_transmission
 * KHR_lights_punctual is mostly working, but light range is not supported
 
 Simple transform animations are supported to some extent. Vertex deformations, either through morphing or skinning are currently not supported.
